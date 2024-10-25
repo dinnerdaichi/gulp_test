@@ -1,9 +1,11 @@
 const gulp = require('gulp');
 const fs = require('fs');
 const path = require('path');
+const ejs = require('gulp-ejs');
+const rename = require('gulp-rename');
 
 // Sassファイルとディレクトリの自動生成タスク
-gulp.task('create-sass-structure', function (done) {
+gulp.task('create', function (done) {
   // 基本的なフォルダ構成
   const folders = [
     'sass',
@@ -144,3 +146,20 @@ $font-accent_yellow: #FFEE56;`;
 
   done();
 });
+
+// EJSテンプレートをHTMLにコンパイルするタスク
+gulp.task('ejs', () => {
+  return gulp.src('./assets/ejs/**/*.ejs') // EJSテンプレートを指定
+    .pipe(ejs({}, {}, { ext: '.html' }).on('error', console.error)) // エラー処理
+    .pipe(rename({ extname: '.html' })) // 拡張子を.htmlに変更
+    .pipe(gulp.dest('./assets/dist')); // 出力先フォルダ
+});
+
+// 監視タスクにEJSを追加（既にwatchタスクがあれば変更）
+gulp.task('watch', () => {
+  gulp.watch('./assets/ejs/**/*.ejs', gulp.series('ejs')); // EJSテンプレートの監視を追加
+  // 他の監視設定があればここに追加
+});
+
+// デフォルトタスクを更新して、必要に応じてejsタスクも実行
+gulp.task('default', gulp.series('ejs', 'watch'));
